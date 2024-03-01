@@ -16,6 +16,7 @@ library(tidyverse)
 library(tigris)
 library(sf)
 library(mapview)
+library(RColorBrewer)
 
 
 #### Read tree inventory data ####
@@ -53,10 +54,10 @@ tract_bg <- rbind(tract_nj, tract_pa) %>% # Combine NJ and PA tracts
 
 #### Data manipulation ####
 tract_dbh <- dat %>%
-  filter(grepl("PLANETREE", tree_name)) %>%
+  filter(grepl("MAPLE", tree_name)) %>%
   st_intersection(phl_tract,.) %>%
   group_by(GEOID) %>%
-  summarize(tree_dbh = mean(tree_dbh, na.rm = TRUE))%>%
+  summarize(tree_dbh = sum(tree_dbh, na.rm = TRUE))%>%
   st_drop_geometry() %>%
   left_join(phl_tract, by = "GEOID") %>%
   st_as_sf()
@@ -66,12 +67,12 @@ water_rect <- st_as_sfc(st_bbox(phl_bound), crs = "EPSG:2272")
 
 ggplot() +
   geom_sf(data = water_rect, fill = "lightblue") +
-  geom_sf(data = tract_bg, fill = "gray90", color = "gray80") +
-  geom_sf(data = tract_dbh, aes(fill = tree_dbh), color = "transparent") +
-  scale_fill_viridis_c(option = "plasma", name = "dbh (in)", labels = scales::comma, direction = -1) +
+  geom_sf(data = tract_bg, fill = "gray95", color = "gray90") +
+  geom_sf(data = tract_dbh, aes(fill = tree_dbh), color = "white",alpha=0.5) +
+  scale_fill_distiller(palette = "YlGn",direction=1) +
   labs(title = "Where are Philly's Biggest Planetrees?", subtitle = "2023 Philadelphia Tree Inventory; n = 16,693", fill = "dbh (in)") +
   theme_void() +
-  theme(legend.position = c(0.8, 0.2))
+  theme(legend.position = c(0.8, 0.25))
   
   
 #### Histogram ####
